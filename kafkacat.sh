@@ -19,7 +19,5 @@ done
 
 # Unbuffered output (-u) is important for low throughput tests
 kafkacat -b $BOOTSTRAP -u -G $GROUP_ID $SOURCE_TOPIC \
-  | tee -a ./tmp.kafkacat-source.log \
   | node $runtime $handler \
-  | tee -a ./tmp.kafkacat-target.log \
   | kafkacat -b $BOOTSTRAP -P -t $TARGET_TOPIC

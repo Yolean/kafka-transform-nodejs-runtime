@@ -20,8 +20,6 @@ RUN npm install --only=dev --no-shrinkwrap --no-optional
 # Whatever produces something runnable, but we have no such thing yet
 # RUN npm run prepare
 
-RUN ls -l /usr/src/runtime/
-
 FROM solsson/node-kafkacat@sha256:aa51a23635201191004dbe5ef6eefaf3d4c15728e2072ab88e1aa75525e20f5d \
   AS runtime
 WORKDIR /usr/src/app

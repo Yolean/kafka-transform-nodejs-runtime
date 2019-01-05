@@ -10,13 +10,10 @@ until kafkacat -b $BOOTSTRAP -L -t $SOURCE_TOPIC; do
   sleep 3
 done
 
+tail -f /dev/null
+
 set -x
-echo "{\"test\":\"$(date)\"}" | kafkacat -b $BOOTSTRAP -P -t $SOURCE_TOPIC
-# Assuming that test topic was empty
-kafkacat -b $BOOTSTRAP -C -t $TARGET_TOPIC -c 1
 
 echo "{\"test\":\"$(date)\"}" | kafkacat -b $BOOTSTRAP -P -t $SOURCE_TOPIC
-sleep 1
-echo "{\"test\":\"$(date)\"}" | kafkacat -b $BOOTSTRAP -P -t $SOURCE_TOPIC
-sleep 1
-kafkacat -b $BOOTSTRAP -C -t $TARGET_TOPIC -o -2 -e
+# Assuming that test topic was empty
+kafkacat -b $BOOTSTRAP -C -t $TARGET_TOPIC -c 1 -e -u
