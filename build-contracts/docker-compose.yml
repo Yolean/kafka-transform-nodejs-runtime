@@ -11,15 +11,12 @@ services:
     - zookeeper
     entrypoint:
     - ./bin/kafka-server-start.sh
+    command:
     - ./config/server.properties
     - --override
     -   listeners=PLAINTEXT://kafka:9092
     - --override
-    -   advertised.listeners=PLAINTEXT://kafka:9092
-    - --override
     -   zookeeper.connect=zookeeper:2181
-    - --override
-    -   auto.create.topics.enable=true
     - --override
     -   background.threads=1
     - --override
@@ -30,6 +27,8 @@ services:
     -   log.cleaner.enable=false
     - --override
     -   group.initial.rebalance.delay.ms=0
+    - --override
+    -   auto.create.topics.enable=true
   runtime:
     build: ../
     image: yolean/kafka-transform-nodejs-runtime
@@ -40,27 +39,22 @@ services:
     - "Runtime can't be started without a handler"
   sample-function-1:
     depends_on:
+    # This should ensure that every function build gets the latest local runtime build, but it hasn't worked
     - runtime
     build: ../sample-function-1
     environment:
       BOOTSTRAP: kafka:9092
       SOURCE_TOPIC: example-topic
       TARGET_TOPIC: example-out
+      GROUP_ID: sample-function-1
   test-using-kafkacat:
-    image: solsson/kafkacat@sha256:b91241b5741fccaef282eb8dbdfb6e5289bb8586274175b1836e57912ffecaef
+    build: ./
     labels:
     - com.yolean.build-contract
-    links:
+    depends_on:
+    - sample-function-1
     - kafka
-    entrypoint:
-    - bash
-    - -cex
-    - |
-      kafkacat -b kafka:9092 -C -t example-topic -e || echo "Waiting for kafka..."
-      kafkacat -b kafka:9092 -C -t example-topic -e || echo "Waiting for kafka..."
-      kafkacat -b kafka:9092 -C -t example-topic -e || echo "Waiting for kafka..."
-      kafkacat -b kafka:9092 -C -t example-topic -e || echo "Waiting for kafka..."
-      kafkacat -b kafka:9092 -C -t example-topic -e || echo "Waiting for kafka..."
-      echo '{}' | kafkacat -b kafka:9092 -P -t example-topic
-      sleep 10
-      kafkacat -b kafka:9092 -C -t example-out -c 1
+    environment:
+      BOOTSTRAP: kafka:9092
+      SOURCE_TOPIC: example-topic
+      TARGET_TOPIC: example-out

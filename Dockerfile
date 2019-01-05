@@ -1,4 +1,4 @@
-FROM yolean/node-kafka@sha256:f7aedb184d533cef7b4a88ea8520271f5912fedbc7016f0b5bb8daf29cd39907 \
+FROM solsson/node-kafkacat@sha256:aa51a23635201191004dbe5ef6eefaf3d4c15728e2072ab88e1aa75525e20f5d \
   AS prod
 WORKDIR /usr/src/runtime
 
@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm install --only=prod --no-shrinkwrap --no-optional
 
-FROM yolean/node-kafka@sha256:f7aedb184d533cef7b4a88ea8520271f5912fedbc7016f0b5bb8daf29cd39907 \
+FROM solsson/node-kafkacat@sha256:aa51a23635201191004dbe5ef6eefaf3d4c15728e2072ab88e1aa75525e20f5d \
   AS prepare
 WORKDIR /usr/src/runtime
 
@@ -17,11 +17,12 @@ COPY . .
 
 RUN npm install --only=dev --no-shrinkwrap --no-optional
 
-# Whatever produces something runnable
-# Got no prepare script
+# Whatever produces something runnable, but we have no such thing yet
 # RUN npm run prepare
 
-FROM yolean/node-kafka@sha256:f7aedb184d533cef7b4a88ea8520271f5912fedbc7016f0b5bb8daf29cd39907 \
+RUN ls -l /usr/src/runtime/
+
+FROM solsson/node-kafkacat@sha256:aa51a23635201191004dbe5ef6eefaf3d4c15728e2072ab88e1aa75525e20f5d \
   AS runtime
 WORKDIR /usr/src/app
 
@@ -29,9 +30,9 @@ WORKDIR /usr/src/app
 # COPY --from=prod /usr/src/runtime/node_modules/ WORKDIR /usr/src/runtime/node_modules/
 
 # Whatever is needed at runtime
-COPY --from=prepare /usr/src/runtime/package.json /usr/src/runtime/src /usr/src/runtime/
+COPY --from=prepare /usr/src/runtime/package.json /usr/src/runtime/src /usr/src/runtime/kafkacat.sh /usr/src/runtime/
 
-ENTRYPOINT [ "node", "/usr/src/runtime" ]
+ENTRYPOINT [ "/usr/src/runtime/kafkacat.sh", "/usr/src/runtime" ]
 
 # The require
 CMD [ "/usr/src/app" ]
