@@ -10,7 +10,7 @@ async function main() {
   await run(async json => {
     if (Number.isInteger(json.x)) {
       await new Promise(resolve => setTimeout(resolve, Math.random() * 2));
-      return { x: json.x + 1 };
+      return [{ x: json.x + 1 }];
     }
     else throw new Error('I like Integers! Only!');
   });
