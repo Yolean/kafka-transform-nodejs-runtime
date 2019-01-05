@@ -1,0 +1,22 @@
+{
+  "name": "kafka-transform-nodejs-runtime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yolean/kafka-transform-nodejs-runtime.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yolean/kafka-transform-nodejs-runtime/issues"
+  },
+  "homepage": "https://github.com/Yolean/kafka-transform-nodejs-runtime#readme"
+}

@@ -1,0 +1,60 @@
+version: "3.6"
+services:
+  zookeeper:
+    image: solsson/kafka:2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1
+    entrypoint: ./bin/zookeeper-server-start.sh
+    command:
+    - ./config/zookeeper.properties
+  kafka:
+    image: solsson/kafka:2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1
+    links:
+    - zookeeper
+    entrypoint:
+    - ./bin/kafka-server-start.sh
+    command:
+    - ./config/server.properties
+    - --override
+    -   listeners=PLAINTEXT://kafka:9092
+    - --override
+    -   zookeeper.connect=zookeeper:2181
+    - --override
+    -   background.threads=1
+    - --override
+    -   num.io.threads=1
+    - --override
+    -   num.network.threads=1
+    - --override
+    -   log.cleaner.enable=false
+    - --override
+    -   group.initial.rebalance.delay.ms=0
+    - --override
+    -   auto.create.topics.enable=true
+  runtime:
+    build: ../
+    image: yolean/kafka-transform-nodejs-runtime
+    labels:
+    - com.yolean.build-target
+    entrypoint:
+    - echo
+    - "Runtime can't be started without a handler"
+  sample-function-1:
+    depends_on:
+    # This should ensure that every function build gets the latest local runtime build, but it hasn't worked
+    - runtime
+    build: ../sample-function-1
+    environment:
+      BOOTSTRAP: kafka:9092
+      SOURCE_TOPIC: example-topic
+      TARGET_TOPIC: example-out
+      GROUP_ID: sample-function-1
+  test-using-kafkacat:
+    build: ./
+    labels:
+    - com.yolean.build-contract
+    depends_on:
+    - sample-function-1
+    - kafka
+    environment:
+      BOOTSTRAP: kafka:9092
+      SOURCE_TOPIC: example-topic
+      TARGET_TOPIC: example-out
