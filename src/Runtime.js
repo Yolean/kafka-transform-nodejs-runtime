@@ -29,4 +29,6 @@ function Runtime(file = '/dev/stdin') {
   }
 }
 
+Runtime.validateHandler = fn => typeof fn === 'function';
+
 module.exports = Runtime;

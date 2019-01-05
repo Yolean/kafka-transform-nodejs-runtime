@@ -27,14 +27,16 @@ RUN npm install --only=dev --no-shrinkwrap --no-optional
 
 FROM yolean/node-kafka@sha256:f7aedb184d533cef7b4a88ea8520271f5912fedbc7016f0b5bb8daf29cd39907 \
   AS runtime
-WORKDIR /usr/src/runtime
 
 # Got no dependencies yet, so this fails
-# COPY --from=prod /usr/src/runtime/node_modules/ ./node_modules/
+# COPY --from=prod /usr/src/runtime/node_modules/ WORKDIR /usr/src/runtime/node_modules/
 
 # Whatever is needed at runtime
-COPY --from=prepare package.json src ./
+COPY --from=prepare package.json src /usr/src/runtime/
 
-ENTRYPOINT [ "npm", "start" ]
+ENTRYPOINT [ "node", "/usr/src/runtime" ]
+
+# The require
+CMD [ "/usr/src/app" ]
 
 # Now the handler developer should only need to copy prepared source and node_modules to /usr/src/app

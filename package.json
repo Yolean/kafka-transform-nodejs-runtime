@@ -6,7 +6,8 @@
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example-that-fails": "cat data.json | node ./ ./src/example-handler-x-integers"
   },
   "repository": {
     "type": "git",
