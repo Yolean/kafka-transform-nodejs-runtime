@@ -22,11 +22,13 @@ function Runtime(file = '/dev/stdin') {
       } catch (err) {
         throw new Error('Failed to parse JSON from line: ' + line);
       }
-      const output = await handlerFn(json);
-      console.log(output);
+      const arrayOfMessages = await handlerFn(json);
+      // console.log writes and flushes one line per message, unlike process.stdout.write
+      arrayOfMessages.forEach(message => console.log(JSON.stringify(message)));
     }
   }
 }
 
+Runtime.validateHandler = fn => typeof fn === 'function';
 
 module.exports = Runtime;
