@@ -10,10 +10,11 @@ until kafkacat -b $BOOTSTRAP -L -t $SOURCE_TOPIC; do
   sleep 3
 done
 
-tail -f /dev/null
-
 set -x
 
+# having some kind of timing issue, transform won't happen if this runs prior to runtime start
+sleep 10
+
 echo "{\"test\":\"$(date)\"}" | kafkacat -b $BOOTSTRAP -P -t $SOURCE_TOPIC
-# Assuming that test topic was empty
-kafkacat -b $BOOTSTRAP -C -t $TARGET_TOPIC -c 1 -e -u
+# Assuming that test topic was empty this will only exit if the transform produced an output message
+kafkacat -b $BOOTSTRAP -C -t $TARGET_TOPIC -c 1 -u

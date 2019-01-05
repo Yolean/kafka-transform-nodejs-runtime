@@ -28,7 +28,7 @@ WORKDIR /usr/src/app
 # COPY --from=prod /usr/src/runtime/node_modules/ WORKDIR /usr/src/runtime/node_modules/
 
 # Whatever is needed at runtime
-COPY --from=prepare /usr/src/runtime/package.json /usr/src/runtime/src /usr/src/runtime/kafkacat.sh /usr/src/runtime/
+COPY --from=prepare /usr/src/runtime/ /usr/src/runtime/
 
 ENTRYPOINT [ "/usr/src/runtime/kafkacat.sh", "/usr/src/runtime" ]
 

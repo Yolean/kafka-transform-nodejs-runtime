@@ -17,6 +17,16 @@ until kafkacat -b $BOOTSTRAP -L -t $SOURCE_TOPIC; do
   sleep 1
 done
 
+until kafkacat -b $BOOTSTRAP -L -t $TARGET_TOPIC; do
+  echo "Waiting for kafka $BOOTSTRAP taget topic $SOURCE_TOPIC to be ready"
+  sleep 1
+done
+
+echo "Runtime: $runtime"
+ls -l $runtime*
+echo "Handler: $handler"
+ls -l $handler*
+
 # Unbuffered output (-u) is important for low throughput tests
 kafkacat -b $BOOTSTRAP -u -G $GROUP_ID $SOURCE_TOPIC \
   | node $runtime $handler \
