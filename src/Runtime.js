@@ -1,4 +1,4 @@
-const fs = require('fs');
+const Kafka = require('node-rdkafka');
 const readline = require('readline');
 const stream = require('stream');
 
@@ -11,8 +11,8 @@ function readLines({ input }) {
   return output;
 }
 
-function Runtime(file = '/dev/stdin') {
-  const input = fs.createReadStream(file);
+function Runtime(file = 'TODO replace with kafka options') {
+  const input = Kafka.KafkaConsumer.createReadStream.createReadStream(file);
 
   return async function run(handlerFn) {
     for await (const line of readLines({ input })) {
