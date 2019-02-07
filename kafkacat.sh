@@ -27,7 +27,5 @@ ls -l $runtime*
 echo "Handler: $handler"
 ls -l $handler*
 
-# Unbuffered output (-u) is important for low throughput tests
-kafkacat -b $BOOTSTRAP -u -G $GROUP_ID $SOURCE_TOPIC \
-  | node $runtime $handler \
+node $runtime $handler \
   | kafkacat -b $BOOTSTRAP -P -t $TARGET_TOPIC
