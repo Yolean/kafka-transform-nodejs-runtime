@@ -1,31 +1,55 @@
-const fs = require('fs');
 const readline = require('readline');
-const stream = require('stream');
+const { KafkaConsumer } = require('node-rdkafka');
+const { promisify } = require('util');
 
-// Inspired by https://medium.com/@wietsevenema/node-js-using-for-await-to-read-lines-from-a-file-ead1f4dd8c6f
-function readLines({ input }) {
-  const output = new stream.PassThrough({ objectMode: true });
-  const rl = readline.createInterface({ input });
-  rl.on('line', line => output.write(line));
-  rl.on('close', () => output.push(null));
-  return output;
-}
+function Runtime(options, consumerOptions) {
+  const consumer = new KafkaConsumer(consumerOptions, {});
 
-function Runtime(file = '/dev/stdin') {
-  const input = fs.createReadStream(file);
+  consumer.on('ready', () => {
+    console.log(options, 'Subscribing to topics');
+    consumer.subscribe([options.topic]);
+  })
+
+  consumer.on('ready', () => console.log('Runtime consumer ready!'));
+
+  consumer.connect();
 
   return async function run(handlerFn) {
-    for await (const line of readLines({ input })) {
-      let json;
-      try {
-        json = JSON.parse(line);
-      } catch (err) {
-        throw new Error('Failed to parse JSON from line: ' + line);
-      }
-      const arrayOfMessages = await handlerFn(json);
-      // console.log writes and flushes one line per message, unlike process.stdout.write
-      arrayOfMessages.forEach(message => console.log(JSON.stringify(message)));
-    }
+
+    const running = new Promise((resolve, reject) => {
+      consumer.on('data', async message => {
+        let json;
+        try {
+          json = JSON.parse(message.value.toString());
+        } catch (err) {
+          throw new Error('Failed to parse JSON from line: ' + message.value);
+        }
+        let arrayOfMessages = [];
+        try {
+          arrayOfMessages = await handlerFn(json);
+        } catch (err) {
+          return reject(err);
+        }
+
+        // console.log writes and flushes one line per message, unlike process.stdout.write
+        arrayOfMessages.forEach(message => console.log(JSON.stringify(message)));
+
+        consumer.commitMessage(message);
+        consumer.consume(1);
+      });
+
+      consumer.on('error', reject);
+      consumer.on('disconnect', reject);
+
+      consumer.consume(1);
+    });
+
+    running.catch(err => {
+      consumer.removeAllListeners();
+      consumer.disconnect();
+    })
+
+    return running;
   }
 }
 
