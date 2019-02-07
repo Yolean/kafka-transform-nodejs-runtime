@@ -1,0 +1,64 @@
+version: "3.6"
+services:
+  zookeeper:
+    image: solsson/kafka:2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1
+    entrypoint: ./bin/zookeeper-server-start.sh
+    command:
+    - ./config/zookeeper.properties
+  kafka:
+    image: solsson/kafka:2.1.0@sha256:ac3f06d87d45c7be727863f31e79fbfdcb9c610b51ba9cf03c75a95d602f15e1
+    links:
+    - zookeeper
+    entrypoint:
+    - ./bin/kafka-server-start.sh
+    command:
+    - ./config/server.properties
+    - --override
+    -   listeners=PLAINTEXT://kafka:9092
+    - --override
+    -   zookeeper.connect=zookeeper:2181
+    - --override
+    -   background.threads=1
+    - --override
+    -   num.io.threads=1
+    - --override
+    -   num.network.threads=1
+    - --override
+    -   log.cleaner.enable=false
+    - --override
+    -   group.initial.rebalance.delay.ms=0
+    - --override
+    -   auto.create.topics.enable=true
+  pixy:
+    restart: on-failure
+    image: solsson/kafka-pixy@sha256:07ce4153e7e72b664bbc815bfef5c0b7e398c3766e97cbdfc8031c472f59a033
+    links:
+    - kafka
+    - zookeeper
+    entrypoint:
+    - kafka-pixy
+    - -kafkaPeers
+    - kafka:9092
+    - -zookeeperPeers
+    - zookeeper:2181
+    - -tcpAddr
+    - 0.0.0.0:80
+  itest:
+    build:
+      context: ../
+      target: prepare
+    labels:
+    - com.yolean.build-contract
+    links:
+    - pixy
+    - kafka
+    entrypoint:
+    - npm
+    - run
+    - itest
+    entrypoint:
+    - tail
+    - -f
+    - /dev/null
+    volumes:
+    - ../src:/usr/src/runtime/src

@@ -4,10 +4,14 @@
   "description": "",
   "main": "index.js",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "jest": "24.1.0",
+    "node-fetch": "2.3.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example-that-fails": "cat data.json | node ./ ./src/example-handler-x-integers"
+    "example-that-fails": "cat data.json | node ./ ./src/example-handler-x-integers",
+    "itest-simple": "./node_modules/.bin/jest --testMatch='**/?(*.)(itest).js' --testEnvironment=node"
   },
   "repository": {
     "type": "git",
